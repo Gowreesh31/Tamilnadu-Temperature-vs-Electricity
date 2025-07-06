@@ -1,0 +1,151 @@
+State,Year,Source,Geographical Capacity (in MW),Generation (in MU),Allocated Capacity (in MW)
+Tamil Nadu,2015-16,Coal,12610,63712.79,
+Tamil Nadu,2015-16,Oil & Gas,1428.88,2748.01,
+Tamil Nadu,2015-16,Nuclear,1440,5471.76,
+Tamil Nadu,2015-16,Hydro,2182.2,4474.27,
+Tamil Nadu,2015-16,Solar,1090.57,507.17,
+Tamil Nadu,2015-16,Wind,7613.89,7273.24,
+Tamil Nadu,2015-16,Small Hydro,123.05,214.03,
+Tamil Nadu,2015-16,Bio Power,926.06,1337.03,
+Tamil Nadu,2016-17,Coal,13100,69749.5,
+Tamil Nadu,2016-17,Oil & Gas,1428.88,2764.37,
+Tamil Nadu,2016-17,Nuclear,2440,9670.69,
+Tamil Nadu,2016-17,Hydro,2203.2,2397.12,
+Tamil Nadu,2016-17,Solar,1728.52,1898.36,
+Tamil Nadu,2016-17,Wind,7861.46,11935.27,
+Tamil Nadu,2016-17,Small Hydro,123.05,93.81,
+Tamil Nadu,2016-17,Bio Power,926.67,1226.48,
+Tamil Nadu,2017-18,Coal,12760,65004.25,
+Tamil Nadu,2017-18,Oil & Gas,1428.88,2768.17,
+Tamil Nadu,2017-18,Nuclear,2440,11694.28,
+Tamil Nadu,2017-18,Hydro,2203.2,2919.6,
+Tamil Nadu,2017-18,Solar,1950.86,2906.01,
+Tamil Nadu,2017-18,Wind,8197.09,12358.01,
+Tamil Nadu,2017-18,Small Hydro,123.05,186.14,
+Tamil Nadu,2017-18,Bio Power,977.52,729.72,
+Tamil Nadu,2018-19,Coal,12660,67959.33,
+Tamil Nadu,2018-19,Oil & Gas,1228.88,2904.05,
+Tamil Nadu,2018-19,Nuclear,2440,7633.54,
+Tamil Nadu,2018-19,Hydro,2178.2,5281.59,
+Tamil Nadu,2018-19,Solar,2618.71,3554.5,
+Tamil Nadu,2018-19,Wind,8968.91,12600.84,
+Tamil Nadu,2018-19,Small Hydro,123.05,347.97,
+Tamil Nadu,2018-19,Bio Power,1020.52,395.16,
+Tamil Nadu,2019-20,Coal,13160,62876.46,
+Tamil Nadu,2019-20,Oil & Gas,1228.88,2869.99,
+Tamil Nadu,2019-20,Nuclear,2440,12986.33,
+Tamil Nadu,2019-20,Hydro,2178.2,4765.24,
+Tamil Nadu,2019-20,Solar,3961.56,4946.63,
+Tamil Nadu,2019-20,Wind,9304.34,14126.92,
+Tamil Nadu,2019-20,Small Hydro,123.05,235.76,
+Tamil Nadu,2019-20,Bio Power,1021.69,454.58,
+Tamil Nadu,2020-21,Coal,13160,48935.32,
+Tamil Nadu,2020-21,Oil & Gas,1228.88,2264.73,
+Tamil Nadu,2020-21,Nuclear,2440,13664.72,
+Tamil Nadu,2020-21,Hydro,2178.2,5212.71,
+Tamil Nadu,2020-21,Solar,4527.47,6115.48,
+Tamil Nadu,2020-21,Wind,9608.04,14564.93,
+Tamil Nadu,2020-21,Small Hydro,123.05,244.77,
+Tamil Nadu,2020-21,Bio Power,1039.91,733.8,
+Tamil Nadu,2021-22,Coal,13685,59450.54,
+Tamil Nadu,2021-22,Oil & Gas,1228.88,1732.22,
+Tamil Nadu,2021-22,Nuclear,2440,15625.26,
+Tamil Nadu,2021-22,Hydro,2178.2,5212.07,
+Tamil Nadu,2021-22,Solar,5067.18,7172.88,
+Tamil Nadu,2021-22,Wind,9866.37,15821.18,
+Tamil Nadu,2021-22,Small Hydro,123.05,293.17,
+Tamil Nadu,2021-22,Bio Power,1042.7,774.04,
+Tamil Nadu,2022-23,Coal,13685,65221.28,
+Tamil Nadu,2022-23,Oil & Gas,1228.88,1861.95,
+Tamil Nadu,2022-23,Nuclear,2440,16012.57,
+Tamil Nadu,2022-23,Hydro,2178.2,5965.77,
+Tamil Nadu,2022-23,Solar,6736.43,9419.39,
+Tamil Nadu,2022-23,Wind,10017.17,16913.85,
+Tamil Nadu,2022-23,Small Hydro,123.05,296.71,
+Tamil Nadu,2022-23,Bio Power,1043.7,996.49,
+Tamil Nadu,2023-24,Coal,14099,73415.2,
+Tamil Nadu,2023-24,Oil & Gas,1228.88,1918.62,
+Tamil Nadu,2023-24,Nuclear,2440,14811.22,
+Tamil Nadu,2023-24,Hydro,2178.2,3563.28,
+Tamil Nadu,2023-24,Solar,8211.38,11737.48,
+Tamil Nadu,2023-24,Wind,10603.54,16908.08,
+Tamil Nadu,2023-24,Small Hydro,123.05,206,
+Tamil Nadu,2023-24,Bio Power,1045.45,751.75,
+Tamil Nadu,2024-25,Coal,14099,54968.48,
+Tamil Nadu,2024-25,Oil & Gas,1238.88,1295.11,
+Tamil Nadu,2024-25,Nuclear,2440,12844.94,
+Tamil Nadu,2024-25,Hydro,2178.2,3665.26,
+Tamil Nadu,2024-25,Solar,9518.37,11034.72,
+Tamil Nadu,2024-25,Wind,11409.04,14906.01,
+Tamil Nadu,2024-25,Small Hydro,123.05,170.72,
+Tamil Nadu,2024-25,Bio Power,1045.45,300.53,
+Tamil Nadu,2017-18,Hydro,,,2203.2
+Tamil Nadu,2019-20,Res,,,14351.52
+Tamil Nadu,2018-19,Hydro,,,2178.2
+Tamil Nadu,2022-23,Hydro,,,2178.2
+Tamil Nadu,2018-19,Res,,,12646.88
+Tamil Nadu,2024-25,Thermal,,,15970.031
+Tamil Nadu,2021-22,Nuclear,,,1448
+Tamil Nadu,2020-21,Hydro,,,2178.2
+Tamil Nadu,2021-22,Hydro,,,2178.2
+Tamil Nadu,2019-20,Nuclear,,,1448
+Tamil Nadu,2023-24,Nuclear,,,1448
+Tamil Nadu,2023-24,Thermal,,,16147.043
+Tamil Nadu,2015-16,Nuclear,,,986.5
+Tamil Nadu,2018-19,Nuclear,,,1448
+Tamil Nadu,2019-20,Thermal,,,14862.62
+Tamil Nadu,2024-25,Res,,,22145.22
+Tamil Nadu,2020-21,Nuclear,,,1448
+Tamil Nadu,2019-20,Hydro,,,2178.2
+Tamil Nadu,2024-25,Hydro,,,2178.2
+Tamil Nadu,2021-22,Thermal,,,15364.171
+Tamil Nadu,2022-23,Nuclear,,,1448
+Tamil Nadu,2017-18,Nuclear,,,1448
+Tamil Nadu,2022-23,Thermal,,,15917.713
+Tamil Nadu,2017-18,Thermal,,,15086.07
+Tamil Nadu,2023-24,Hydro,,,2178.2
+Tamil Nadu,2022-23,Res,,,17969.66
+Tamil Nadu,2021-22,Res,,,16148.61
+Tamil Nadu,2023-24,Res,,,20032.73
+Tamil Nadu,2018-19,Thermal,,,14786.07
+Tamil Nadu,2015-16,Res,,,9747.39
+Tamil Nadu,2016-17,Res,,,10625
+Tamil Nadu,2015-16,Thermal,,,12713.94
+Tamil Nadu,2020-21,Thermal,,,14839.171
+Tamil Nadu,2024-25,Nuclear,,,1448
+Tamil Nadu,2016-17,Nuclear,,,1448
+Tamil Nadu,2016-17,Thermal,,,14836.07
+Tamil Nadu,2020-21,Res,,,15229.65
+Tamil Nadu,2017-18,Res,,,11165.41
+Tamil Nadu,2015-16,Hydro,,,2182.2
+Tamil Nadu,2016-17,Hydro,,,2203.2
+Tamil Nadu,2021-22,Private,,,21771.481
+Tamil Nadu,2021-22,Central,,,6222.52
+Tamil Nadu,2015-16,Central,,,5141.6
+Tamil Nadu,2015-16,State,,,7598.98
+Tamil Nadu,2016-17,Central,,,5837.52
+Tamil Nadu,2021-22,State,,,7144.98
+Tamil Nadu,2022-23,Private,,,23592.531
+Tamil Nadu,2016-17,State,,,7169.98
+Tamil Nadu,2019-20,Central,,,6245.97
+Tamil Nadu,2023-24,Private,,,26069.601
+Tamil Nadu,2022-23,State,,,7144.98
+Tamil Nadu,2018-19,State,,,7144.98
+Tamil Nadu,2020-21,Central,,,6222.52
+Tamil Nadu,2023-24,State,,,7144.98
+Tamil Nadu,2023-24,Central,,,6591.392
+Tamil Nadu,2024-25,State,,,7144.98
+Tamil Nadu,2018-19,Central,,,6069.42
+Tamil Nadu,2019-20,Private,,,19449.39
+Tamil Nadu,2015-16,Private,,,12889.45
+Tamil Nadu,2024-25,Private,,,28182.091
+Tamil Nadu,2017-18,State,,,7169.98
+Tamil Nadu,2024-25,Central,,,6414.38
+Tamil Nadu,2016-17,Private,,,16104.77
+Tamil Nadu,2019-20,State,,,7144.98
+Tamil Nadu,2020-21,State,,,7144.98
+Tamil Nadu,2017-18,Private,,,16613.28
+Tamil Nadu,2017-18,Central,,,6119.42
+Tamil Nadu,2020-21,Private,,,20327.521
+Tamil Nadu,2022-23,Central,,,6776.062
+Tamil Nadu,2018-19,Private,,,17844.75
