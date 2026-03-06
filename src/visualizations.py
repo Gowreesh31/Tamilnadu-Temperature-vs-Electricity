@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from scipy import stats as sp_stats
 
 import sys
 from pathlib import Path
@@ -544,3 +545,387 @@ def plot_urban_rural(
         textposition="outside",
     ))
     return _apply_theme(fig, title)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Advanced Analytics Charts
+# ═══════════════════════════════════════════════════════════════════
+
+def plot_seasonal_decomposition(
+    observed: np.ndarray,
+    trend: np.ndarray,
+    seasonal: np.ndarray,
+    residual: np.ndarray,
+    title: str = "Seasonal Decomposition",
+) -> go.Figure:
+    """4-panel decomposition: Observed / Trend / Seasonal / Residual."""
+    fig = make_subplots(
+        rows=4, cols=1,
+        shared_xaxes=True,
+        subplot_titles=["Observed", "Trend", "Seasonal", "Residual"],
+        vertical_spacing=0.06,
+    )
+
+    x = list(range(len(observed)))
+
+    fig.add_trace(go.Scatter(
+        x=x, y=observed, mode="lines",
+        line=dict(color=COLOR_PALETTE["secondary"], width=1.5), name="Observed",
+    ), row=1, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=x, y=trend, mode="lines",
+        line=dict(color=COLOR_PALETTE["accent"], width=2.5), name="Trend",
+    ), row=2, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=x, y=seasonal, mode="lines",
+        line=dict(color=COLOR_PALETTE["primary"], width=1.5), name="Seasonal",
+    ), row=3, col=1)
+
+    fig.add_trace(go.Scatter(
+        x=x, y=residual, mode="markers",
+        marker=dict(color=COLOR_PALETTE["text"], size=3, opacity=0.5), name="Residual",
+    ), row=4, col=1)
+
+    fig.update_layout(height=700, showlegend=False)
+    return _apply_theme(fig, title)
+
+
+def plot_rolling_correlation(
+    rolling_corr: pd.Series,
+    window: int = 12,
+    title: str = "Rolling Correlation (12-month window)",
+) -> go.Figure:
+    """Line chart of rolling correlation over time."""
+    fig = go.Figure()
+
+    values = rolling_corr.values
+    x = list(range(len(values)))
+
+    # Color-code positive vs negative correlation
+    fig.add_trace(go.Scatter(
+        x=x, y=values,
+        mode="lines",
+        line=dict(color=COLOR_PALETTE["accent"], width=2.5),
+        fill="tozeroy",
+        fillcolor="rgba(255,230,109,0.15)",
+        name=f"Correlation (w={window})",
+        hovertemplate="Period: %{x}<br>r = %{y:.3f}<extra></extra>",
+    ))
+
+    # Zero line
+    fig.add_hline(y=0, line_dash="dash", line_color="white", opacity=0.3)
+    fig.add_hline(y=0.5, line_dash="dot", line_color=COLOR_PALETTE["secondary"], opacity=0.4,
+                  annotation_text="r=0.5")
+    fig.add_hline(y=-0.5, line_dash="dot", line_color=COLOR_PALETTE["primary"], opacity=0.4,
+                  annotation_text="r=-0.5")
+
+    fig.update_yaxes(title_text="Pearson r", range=[-1, 1])
+    fig.update_xaxes(title_text="Time Period")
+    return _apply_theme(fig, title)
+
+
+def plot_anomaly_detection(
+    values: pd.Series,
+    z_scores: np.ndarray,
+    anomaly_indices: list,
+    title: str = "Anomaly Detection",
+    y_label: str = "Value",
+) -> go.Figure:
+    """Scatter plot with anomalies highlighted in red."""
+    fig = go.Figure()
+
+    x = list(range(len(values)))
+    vals = values.values if hasattr(values, 'values') else values
+
+    # Normal points
+    normal_mask = np.ones(len(vals), dtype=bool)
+    normal_mask[anomaly_indices] = False
+
+    fig.add_trace(go.Scatter(
+        x=[x[i] for i in range(len(x)) if normal_mask[i]],
+        y=[vals[i] for i in range(len(vals)) if normal_mask[i]],
+        mode="markers",
+        marker=dict(color=COLOR_PALETTE["secondary"], size=6, opacity=0.6),
+        name="Normal",
+    ))
+
+    # Anomaly points
+    if len(anomaly_indices) > 0:
+        fig.add_trace(go.Scatter(
+            x=[x[i] for i in anomaly_indices],
+            y=[vals[i] for i in anomaly_indices],
+            mode="markers",
+            marker=dict(
+                color=COLOR_PALETTE["primary"], size=12, symbol="x",
+                line=dict(width=2, color="white"),
+            ),
+            name=f"Anomaly ({len(anomaly_indices)})",
+            hovertemplate=f"Index: %{{x}}<br>{y_label}: %{{y:.1f}}<br>⚠️ Anomaly<extra></extra>",
+        ))
+
+    # Trend line
+    fig.add_trace(go.Scatter(
+        x=x, y=vals,
+        mode="lines",
+        line=dict(color="rgba(255,255,255,0.2)", width=1),
+        showlegend=False,
+    ))
+
+    fig.update_yaxes(title_text=y_label)
+    return _apply_theme(fig, title)
+
+
+def plot_distribution(
+    values: pd.Series,
+    name: str = "Value",
+    title: str = "Distribution Analysis",
+) -> go.Figure:
+    """Histogram + KDE + box plot combination."""
+    fig = make_subplots(
+        rows=2, cols=1,
+        row_heights=[0.75, 0.25],
+        shared_xaxes=True,
+        vertical_spacing=0.05,
+    )
+
+    vals = values.dropna()
+
+    # Histogram
+    fig.add_trace(go.Histogram(
+        x=vals,
+        nbinsx=30,
+        marker_color=COLOR_PALETTE["secondary"],
+        opacity=0.7,
+        name="Distribution",
+        hovertemplate=f"{name}: %{{x:.1f}}<br>Count: %{{y}}<extra></extra>",
+    ), row=1, col=1)
+
+    # KDE overlay
+    from scipy.stats import gaussian_kde
+    try:
+        kde = gaussian_kde(vals)
+        x_range = np.linspace(vals.min(), vals.max(), 200)
+        kde_vals = kde(x_range) * len(vals) * (vals.max() - vals.min()) / 30
+
+        fig.add_trace(go.Scatter(
+            x=x_range, y=kde_vals,
+            mode="lines",
+            line=dict(color=COLOR_PALETTE["accent"], width=2.5),
+            name="KDE",
+        ), row=1, col=1)
+    except Exception:
+        pass
+
+    # Box plot
+    fig.add_trace(go.Box(
+        x=vals,
+        marker_color=COLOR_PALETTE["primary"],
+        name="Box Plot",
+        boxpoints="outliers",
+    ), row=2, col=1)
+
+    fig.update_layout(height=500, showlegend=True)
+    fig.update_xaxes(title_text=name, row=2, col=1)
+    return _apply_theme(fig, title)
+
+
+def plot_model_comparison(
+    leaderboard: list[dict],
+    title: str = "Model Performance Leaderboard",
+) -> go.Figure:
+    """Grouped bar chart comparing model metrics."""
+    names = [r["name"] for r in leaderboard]
+    r2_scores = [r["metrics"].get("R²", 0) for r in leaderboard]
+    mae_scores = [r["metrics"].get("MAE", 0) for r in leaderboard]
+    rmse_scores = [r["metrics"].get("RMSE", 0) for r in leaderboard]
+
+    fig = make_subplots(
+        rows=1, cols=3,
+        subplot_titles=["R² Score (↑ better)", "MAE (↓ better)", "RMSE (↓ better)"],
+        horizontal_spacing=0.08,
+    )
+
+    colors = [COLOR_PALETTE["secondary"], COLOR_PALETTE["accent"],
+              COLOR_PALETTE["primary"], "#A78BFA"]
+
+    # R²
+    fig.add_trace(go.Bar(
+        x=names, y=r2_scores,
+        marker_color=colors[:len(names)],
+        text=[f"{v:.4f}" for v in r2_scores],
+        textposition="outside",
+        showlegend=False,
+    ), row=1, col=1)
+
+    # MAE
+    fig.add_trace(go.Bar(
+        x=names, y=mae_scores,
+        marker_color=colors[:len(names)],
+        text=[f"{v:.1f}" for v in mae_scores],
+        textposition="outside",
+        showlegend=False,
+    ), row=1, col=2)
+
+    # RMSE
+    fig.add_trace(go.Bar(
+        x=names, y=rmse_scores,
+        marker_color=colors[:len(names)],
+        text=[f"{v:.1f}" for v in rmse_scores],
+        textposition="outside",
+        showlegend=False,
+    ), row=1, col=3)
+
+    fig.update_layout(height=400)
+    return _apply_theme(fig, title)
+
+
+def plot_feature_importance(
+    importance: dict,
+    title: str = "Random Forest — Feature Importance",
+) -> go.Figure:
+    """Horizontal bar chart for feature importance."""
+    sorted_feat = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+    names = [f[0] for f in sorted_feat]
+    values = [f[1] for f in sorted_feat]
+
+    fig = go.Figure(go.Bar(
+        x=values,
+        y=names,
+        orientation="h",
+        marker=dict(
+            color=values,
+            colorscale=[[0, COLOR_PALETTE["secondary"]], [1, COLOR_PALETTE["primary"]]],
+        ),
+        text=[f"{v:.1%}" for v in values],
+        textposition="outside",
+    ))
+
+    fig.update_xaxes(title_text="Importance Score")
+    fig.update_layout(height=max(250, len(names) * 50))
+    return _apply_theme(fig, title)
+
+
+def plot_residual_analysis(
+    residuals: np.ndarray,
+    predictions: np.ndarray,
+    title: str = "Residual Analysis",
+) -> go.Figure:
+    """3-panel residual analysis: residuals vs fitted, histogram, Q-Q plot."""
+    fig = make_subplots(
+        rows=1, cols=3,
+        subplot_titles=[
+            "Residuals vs Fitted",
+            "Residual Distribution",
+            "Q-Q Plot",
+        ],
+        horizontal_spacing=0.08,
+    )
+
+    # 1. Residuals vs Fitted
+    fig.add_trace(go.Scatter(
+        x=predictions, y=residuals,
+        mode="markers",
+        marker=dict(color=COLOR_PALETTE["secondary"], size=5, opacity=0.6),
+        showlegend=False,
+    ), row=1, col=1)
+    fig.add_hline(y=0, line_dash="dash", line_color="white", opacity=0.3, row=1, col=1)
+
+    # 2. Residual histogram
+    fig.add_trace(go.Histogram(
+        x=residuals,
+        nbinsx=20,
+        marker_color=COLOR_PALETTE["accent"],
+        opacity=0.7,
+        showlegend=False,
+    ), row=1, col=2)
+
+    # 3. Q-Q plot
+    sorted_resid = np.sort(residuals)
+    theoretical = sp_stats.norm.ppf(
+        np.linspace(0.01, 0.99, len(sorted_resid))
+    )
+    fig.add_trace(go.Scatter(
+        x=theoretical, y=sorted_resid,
+        mode="markers",
+        marker=dict(color=COLOR_PALETTE["primary"], size=5),
+        showlegend=False,
+    ), row=1, col=3)
+    # 45-degree reference line
+    line_range = [min(theoretical), max(theoretical)]
+    fig.add_trace(go.Scatter(
+        x=line_range, y=line_range,
+        mode="lines",
+        line=dict(color="white", dash="dash", width=1),
+        showlegend=False,
+    ), row=1, col=3)
+
+    fig.update_layout(height=350)
+    fig.update_xaxes(title_text="Fitted Values", row=1, col=1)
+    fig.update_yaxes(title_text="Residuals", row=1, col=1)
+    fig.update_xaxes(title_text="Residual Value", row=1, col=2)
+    fig.update_xaxes(title_text="Theoretical Quantiles", row=1, col=3)
+    fig.update_yaxes(title_text="Sample Quantiles", row=1, col=3)
+    return _apply_theme(fig, title)
+
+
+def plot_correlation_matrix(
+    df: pd.DataFrame,
+    title: str = "Correlation Matrix",
+) -> go.Figure:
+    """Enhanced heatmap for all numeric variables."""
+    numeric = df.select_dtypes(include=[np.number])
+    corr = numeric.corr()
+
+    fig = go.Figure(data=go.Heatmap(
+        z=corr.values,
+        x=corr.columns.tolist(),
+        y=corr.index.tolist(),
+        colorscale="RdBu_r",
+        zmid=0,
+        text=np.round(corr.values, 3),
+        texttemplate="%{text}",
+        textfont=dict(size=11),
+        hovertemplate="%{x} × %{y}<br>r = %{z:.3f}<extra></extra>",
+        colorbar=dict(title="r"),
+    ))
+
+    fig.update_layout(height=500)
+    return _apply_theme(fig, title)
+
+
+def plot_granger_results(
+    granger_results: dict,
+    title: str = "Granger Causality Test Results",
+) -> go.Figure:
+    """Bar chart of p-values by lag with significance markers."""
+    if "results" not in granger_results or not granger_results["results"]:
+        fig = go.Figure()
+        fig.add_annotation(text="Granger test could not be completed", showarrow=False)
+        return _apply_theme(fig, title)
+
+    results = granger_results["results"]
+    lags = list(results.keys())
+    p_values = [results[lag]["p_value"] for lag in lags]
+    significant = [results[lag]["significant"] for lag in lags]
+
+    colors = [COLOR_PALETTE["secondary"] if s else COLOR_PALETTE["primary"] for s in significant]
+
+    fig = go.Figure(go.Bar(
+        x=[f"Lag {lag}" for lag in lags],
+        y=p_values,
+        marker_color=colors,
+        text=[f"p={p:.4f}" for p in p_values],
+        textposition="outside",
+        hovertemplate="Lag %{x}<br>p-value: %{y:.4f}<extra></extra>",
+    ))
+
+    # Significance threshold line
+    fig.add_hline(y=0.05, line_dash="dash", line_color=COLOR_PALETTE["accent"],
+                  annotation_text="α = 0.05 (significance)", opacity=0.8)
+
+    fig.update_yaxes(title_text="P-value", range=[0, max(p_values) * 1.3 if p_values else 1])
+    fig.update_layout(height=400)
+    return _apply_theme(fig, title)
+

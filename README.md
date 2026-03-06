@@ -34,10 +34,15 @@ This project investigates how **temperature patterns** correlate with **electric
 
 - 🌐 **Live API Data Fetching** — Temperature (Open-Meteo), GDP (World Bank), Electricity (data.gov.in)  
 - 📁 **Smart Fallback** — Gracefully falls back to bundled CSV data if APIs are unavailable  
-- 📊 **Interactive Dashboard** — Streamlit + Plotly web dashboard with 6 analysis pages  
-- 🔮 **ML Forecasting** — SARIMAX time series with train/test split and evaluation metrics  
-- 📈 **Statistical Analysis** — Pearson/Spearman correlation, seasonal decomposition, linear regression  
-- 🌡️ **State Comparison** — Tamil Nadu vs Andhra Pradesh temperature analysis  
+- 📊 **Interactive Dashboard** — Streamlit + Plotly web dashboard with **8 analysis pages**  
+- 🔍 **Exploratory Data Analysis** — Data profiling, distribution analysis, box plots, skewness/kurtosis  
+- 🧪 **Advanced Statistical Tests** — Granger Causality, Mann-Kendall trend, ADF stationarity  
+- 🤖 **Multi-Model ML Comparison** — Linear, Polynomial (deg 2,3), Random Forest with ranked leaderboard  
+- 🔮 **Time Series Forecasting** — SARIMAX with train/test, confidence intervals, downloadable CSVs  
+- 📈 **Correlation Analysis** — Pearson/Spearman, rolling correlation, causal relationship testing  
+- 🔎 **Anomaly Detection** — Modified Z-score based outlier identification  
+- 🧠 **Auto-Insight Engine** — Automatically discovers and articulates key data findings  
+- 🌡️ **Seasonal Decomposition** — Trend/seasonal/residual breakdown for time series  
 - 💰 **Economic Analysis** — GDP trends, state comparisons, TANGEDCO financials  
 
 ---
@@ -59,7 +64,7 @@ This project investigates how **temperature patterns** correlate with **electric
 ## 🏗️ Project Architecture
 
 ```
-├── app.py                    # Streamlit dashboard entry point
+├── app.py                    # 8-page Streamlit dashboard
 ├── config.py                 # API endpoints, paths, constants
 ├── requirements.txt          # Dependencies
 ├── .env.example              # API key template
@@ -68,8 +73,9 @@ This project investigates how **temperature patterns** correlate with **electric
 │   ├── data_fetcher.py       # API clients (Open-Meteo, World Bank, data.gov.in)
 │   ├── data_loader.py        # API-first data loading with CSV fallback
 │   ├── analysis.py           # Correlation, standardization, seasonal analysis
-│   ├── models.py             # SARIMAX forecasting, Linear Regression
-│   └── visualizations.py     # Reusable Plotly chart library
+│   ├── advanced_analysis.py  # Granger causality, ADF, Mann-Kendall, anomalies
+│   ├── models.py             # SARIMAX, Linear, Polynomial, Random Forest
+│   └── visualizations.py     # 25+ reusable Plotly chart functions
 │
 ├── data/
 │   ├── raw/                  # Bundled CSV/XLSX datasets (fallback)
@@ -138,28 +144,49 @@ The dashboard will open at **http://localhost:8501** 🎉
 
 | Page | Description |
 |------|-------------|
-| **🏠 Overview** | Project summary, key metrics cards, dataset statistics |
-| **🌡️ Temperature** | Heatmaps, trend lines, TN vs AP state comparison |
-| **⚡ Electricity** | Demand trends, year comparisons, production mix pie charts, sector breakdown |
-| **📊 Correlation** | Standardized overlay, scatter + regression, Pearson/Spearman tests |
-| **💰 Economics** | State/national GDP trends, multi-state comparison, TANGEDCO P&L |
-| **🔮 Predictions** | Interactive SARIMAX forecasting with configurable parameters and model metrics |
+| **🏠 Overview** | KPI cards, auto-generated insights, dataset summary, analytics pipeline |
+| **🔍 EDA** | Data profiling, distribution analysis (histogram+KDE+box), anomaly detection |
+| **🌡️ Temperature** | Heatmaps, trends, seasonal decomposition, Mann-Kendall test, state comparison |
+| **⚡ Electricity** | Demand trends, heatmaps, production mix, seasonal decomposition |
+| **📊 Correlation** | Standardized overlay, scatter regression, **Granger causality**, rolling correlation |
+| **💰 Economics** | State/national GDP, multi-state comparison, TANGEDCO P&L |
+| **🤖 ML Models** | Multi-model leaderboard, Random Forest deep-dive, residual analysis |
+| **🔮 Predictions** | SARIMAX forecasting with configurable params, downloadable forecast CSVs |
+
+---
+
+## 🧪 Statistical Methodology
+
+| Test | Purpose | Implementation |
+|------|---------|---------------|
+| **Granger Causality** | Does temperature *cause* demand? | `statsmodels.grangercausalitytests` |
+| **Mann-Kendall** | Non-parametric monotonic trend detection | Custom implementation |
+| **ADF (Augmented Dickey-Fuller)** | Time series stationarity test | `statsmodels.adfuller` |
+| **Pearson / Spearman** | Linear / rank correlation | `scipy.stats` |
+| **Modified Z-Score** | Robust anomaly detection | MAD-based outlier identification |
+| **Rolling Correlation** | Time-varying relationship strength | Windowed Pearson r |
 
 ---
 
 ## 🤖 Machine Learning
 
-### SARIMAX Time Series Forecasting
-- Order: `(1, 1, 1)` with seasonal `(1, 1, 0, 12)`
-- **Train/test split** for honest evaluation
-- Metrics: **MAE**, **RMSE**, **R²**, **MAPE**
-- 95% confidence intervals on forecasts
-- AIC/BIC model comparison
+### Model Comparison Leaderboard
 
-### Linear Regression
-- Temperature → Electricity demand relationship
-- Coefficient interpretation and equation output
-- Full evaluation metrics suite
+All models are trained and ranked automatically:
+
+| Model | Type | Features |
+|-------|------|----------|
+| **Linear Regression** | Parametric | Temperature |
+| **Polynomial (Degree 2)** | Non-linear | Temperature (quadratic) |
+| **Polynomial (Degree 3)** | Non-linear | Temperature (cubic) |
+| **Random Forest** | Ensemble | Temperature + Month (5-fold CV) |
+| **SARIMAX** | Time Series | Lag features + seasonality |
+
+### Evaluation Metrics
+- **R²**, **MAE**, **RMSE**, **MAPE** for all models
+- **5-fold cross-validation** for Random Forest
+- **AIC/BIC** for SARIMAX model comparison
+- **Residual analysis**: Residuals vs Fitted, Q-Q plot, distribution check
 
 ---
 
@@ -179,11 +206,12 @@ The dashboard will open at **http://localhost:8501** 🎉
 
 ## 🔮 Future Improvements
 
-- [ ] Add deep learning models (LSTM/Prophet) for comparison
-- [ ] Real-time temperature monitoring dashboard
+- [ ] Add deep learning models (LSTM / Prophet) for comparison
+- [ ] Real-time temperature monitoring with streaming data
 - [ ] District-level granular analysis
 - [ ] Renewable energy transition impact study
 - [ ] Deploy on Streamlit Cloud for public access
+- [ ] Automated PDF report generation
 
 ---
 

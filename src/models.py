@@ -4,6 +4,9 @@ Machine learning models for Tamil Nadu Temperature vs Electricity.
 Implements:
   - SARIMAX time series forecasting with proper train/test evaluation
   - Linear regression for temperature → electricity demand relationship
+  - Polynomial regression (degree 2, 3) for non-linear modelling
+  - Random Forest regressor with feature importance
+  - Multi-model comparison leaderboard
   - Model evaluation metrics (MAE, RMSE, R², MAPE)
 """
 
@@ -13,6 +16,10 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
@@ -199,3 +206,232 @@ def regression_temp_demand(
         "predictions": y_pred,
         "equation": f"Demand = {model.coef_[0]:.2f} × Temperature + {model.intercept_:.2f}",
     }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Polynomial Regression
+# ═══════════════════════════════════════════════════════════════════
+
+def polynomial_regression(
+    temperature: pd.Series,
+    demand: pd.Series,
+    degree: int = 2,
+) -> dict:
+    """
+    Fit polynomial regression: Temperature → Electricity Demand.
+
+    Captures non-linear relationships (e.g., exponential demand increase
+    at very high temperatures due to AC usage).
+
+    Parameters
+    ----------
+    temperature : pd.Series
+    demand : pd.Series
+    degree : int
+        Polynomial degree (2 = quadratic, 3 = cubic).
+
+    Returns
+    -------
+    dict with: model, metrics, predictions, degree, equation
+    """
+    min_len = min(len(temperature), len(demand))
+    X = temperature.values[:min_len].reshape(-1, 1)
+    y = demand.values[:min_len]
+
+    mask = ~(np.isnan(X.flatten()) | np.isnan(y))
+    X, y = X[mask], y[mask]
+
+    if len(X) < degree + 1:
+        return {"model": None, "metrics": {}, "predictions": np.array([])}
+
+    model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    metrics = evaluate_model(y, y_pred)
+
+    # Build equation string
+    lr = model.named_steps["linearregression"]
+    coeffs = lr.coef_
+    intercept = lr.intercept_
+    terms = [f"{intercept:.2f}"]
+    for i in range(1, len(coeffs)):
+        if abs(coeffs[i]) > 0.001:
+            terms.append(f"{coeffs[i]:+.4f}·T^{i}")
+    equation = "Demand = " + " ".join(terms)
+
+    return {
+        "model": model,
+        "metrics": metrics,
+        "predictions": y_pred,
+        "degree": degree,
+        "equation": equation,
+        "residuals": y - y_pred,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Random Forest Regressor
+# ═══════════════════════════════════════════════════════════════════
+
+def random_forest_regression(
+    temperature: pd.Series,
+    demand: pd.Series,
+    month: pd.Series = None,
+    n_estimators: int = 100,
+) -> dict:
+    """
+    Fit Random Forest: Temperature (+ Month) → Electricity Demand.
+
+    Random Forest can capture complex non-linear interactions and
+    provides feature importance scores.
+
+    Parameters
+    ----------
+    temperature : pd.Series
+    demand : pd.Series
+    month : pd.Series, optional
+        Month numbers (1-12) to add seasonality as a feature.
+    n_estimators : int
+        Number of trees in the forest.
+
+    Returns
+    -------
+    dict with: model, metrics, predictions, feature_importance, cv_scores
+    """
+    min_len = min(len(temperature), len(demand))
+    temp_vals = temperature.values[:min_len]
+    demand_vals = demand.values[:min_len]
+
+    # Build feature matrix
+    feature_names = ["Temperature"]
+    if month is not None and len(month) >= min_len:
+        month_vals = month.values[:min_len]
+        X = np.column_stack([temp_vals, month_vals])
+        feature_names.append("Month")
+    else:
+        X = temp_vals.reshape(-1, 1)
+
+    y = demand_vals
+
+    # Remove NaN
+    valid = ~np.isnan(X).any(axis=1) & ~np.isnan(y)
+    X, y = X[valid], y[valid]
+
+    if len(X) < 10:
+        return {"model": None, "metrics": {}, "predictions": np.array([])}
+
+    model = RandomForestRegressor(
+        n_estimators=n_estimators,
+        max_depth=10,
+        random_state=42,
+        n_jobs=-1,
+    )
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    metrics = evaluate_model(y, y_pred)
+
+    # Feature importance
+    importance = dict(zip(feature_names, model.feature_importances_.round(4)))
+
+    # Cross-validation (5-fold)
+    try:
+        cv_scores = cross_val_score(model, X, y, cv=min(5, len(X) // 3), scoring="r2")
+        cv_mean = round(cv_scores.mean(), 4)
+        cv_std = round(cv_scores.std(), 4)
+    except Exception:
+        cv_mean, cv_std = None, None
+        cv_scores = np.array([])
+
+    return {
+        "model": model,
+        "metrics": metrics,
+        "predictions": y_pred,
+        "feature_importance": importance,
+        "cv_r2_mean": cv_mean,
+        "cv_r2_std": cv_std,
+        "cv_scores": cv_scores,
+        "residuals": y - y_pred,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Model Comparison Leaderboard
+# ═══════════════════════════════════════════════════════════════════
+
+def compare_models(
+    temperature: pd.Series,
+    demand: pd.Series,
+    month: pd.Series = None,
+) -> list[dict]:
+    """
+    Run all regression models and return a ranked leaderboard.
+
+    Compares: Linear, Polynomial (deg 2), Polynomial (deg 3), Random Forest.
+
+    Returns
+    -------
+    list of dicts sorted by R² (best first):
+        [{name, metrics, predictions, model_details}, ...]
+    """
+    results = []
+
+    # 1. Linear Regression
+    lr = regression_temp_demand(temperature, demand)
+    if lr["model"] is not None:
+        results.append({
+            "name": "Linear Regression",
+            "type": "linear",
+            "metrics": lr["metrics"],
+            "predictions": lr["predictions"],
+            "equation": lr.get("equation", ""),
+        })
+
+    # 2. Polynomial Regression (degree 2)
+    poly2 = polynomial_regression(temperature, demand, degree=2)
+    if poly2["model"] is not None:
+        results.append({
+            "name": "Polynomial (Degree 2)",
+            "type": "polynomial",
+            "metrics": poly2["metrics"],
+            "predictions": poly2["predictions"],
+            "equation": poly2.get("equation", ""),
+            "residuals": poly2.get("residuals"),
+        })
+
+    # 3. Polynomial Regression (degree 3)
+    poly3 = polynomial_regression(temperature, demand, degree=3)
+    if poly3["model"] is not None:
+        results.append({
+            "name": "Polynomial (Degree 3)",
+            "type": "polynomial",
+            "metrics": poly3["metrics"],
+            "predictions": poly3["predictions"],
+            "equation": poly3.get("equation", ""),
+            "residuals": poly3.get("residuals"),
+        })
+
+    # 4. Random Forest
+    rf = random_forest_regression(temperature, demand, month)
+    if rf["model"] is not None:
+        results.append({
+            "name": "Random Forest",
+            "type": "random_forest",
+            "metrics": rf["metrics"],
+            "predictions": rf["predictions"],
+            "feature_importance": rf.get("feature_importance", {}),
+            "cv_r2_mean": rf.get("cv_r2_mean"),
+            "cv_r2_std": rf.get("cv_r2_std"),
+            "residuals": rf.get("residuals"),
+        })
+
+    # Sort by R² (descending)
+    results.sort(key=lambda x: x["metrics"].get("R²", -999), reverse=True)
+
+    # Add rank
+    for i, r in enumerate(results):
+        r["rank"] = i + 1
+
+    return results
+
